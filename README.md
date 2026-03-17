@@ -13,7 +13,7 @@ A Nuke tool that lets you draw a **backdrop by dragging a marquee** directly in 
 - **Label prompt** — optionally name the backdrop immediately after drawing
 - **Wrap selected nodes** — toolbar button creates a backdrop sized around your current selection
 - **Cross-version** — works on Nuke 11 through 16+ (PySide2 and PySide6)
-- **Cross-platform** — tested on Windows; Linux and macOS compatible
+- **Cross-platform** — Windows; Linux and macOS compatible
 
 ---
 
