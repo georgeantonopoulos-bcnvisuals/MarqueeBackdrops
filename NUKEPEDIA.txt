@@ -1,0 +1,76 @@
+NUKEPEDIA SUBMISSION
+════════════════════
+
+Tool Name:    MarqueeBackdrops
+Category:     Pipeline Tools / UI
+Version:      1.0
+Nuke Version: 11+
+Platform:     Windows, Linux, macOS
+Author:       Marten Blumen
+License:      MIT
+Source:       https://github.com/bratgot/MarqueeBackdrops
+
+────────────────────────────────────────────────────────────────
+
+SHORT DESCRIPTION (used in search results — 150 chars max)
+──────────────────────────────────────────────────────────
+Draw BackdropNodes by dragging a marquee directly in the Node Graph. Shift+B, click and drag, done. Works on Nuke 11–16+.
+
+
+FULL DESCRIPTION
+────────────────
+Nuke's built-in backdrop workflow requires you to place a node, then manually resize and reposition it around your network. MarqueeBackdrops replaces that with a draw-first approach: press Shift+B, drag a rectangle where you want the backdrop, and it appears instantly — sized and positioned exactly as drawn.
+
+HOW IT WORKS
+
+Press Shift+B with the Node Graph focused. The cursor switches to a crosshair. Click and drag to draw your backdrop rectangle. On release, a label dialog appears so you can name it straight away. A random pastel colour is assigned automatically so groups are visually distinct without any extra effort.
+
+A toolbar button is also provided to wrap a backdrop around selected nodes with a single click.
+
+FEATURES
+
+• Drag-to-place marquee — draw the backdrop exactly where and how large you want it
+• Random pastel colours — auto-assigned, visually distinct, soft on the eyes
+• Inline label dialog — name it immediately after drawing
+• Wrap-selection shortcut — creates a backdrop fitted around selected nodes
+• Nuke 11 through 16+ — PySide2 and PySide6 both supported, auto-detected
+• Windows, Linux, macOS compatible
+
+INSTALLATION
+
+1. Copy marquee_backdrop.py to ~/.nuke/
+2. Add to ~/.nuke/menu.py:
+
+    import marquee_backdrop
+
+    toolbar = nuke.toolbar("Nodes")
+    toolbar.addCommand(
+        "Other/Backdrop (Marquee)",
+        "marquee_backdrop.create_backdrop_around_selected()",
+        icon="Backdrop.png",
+    )
+
+3. Restart Nuke
+
+No extra packages required — only the Qt bindings already bundled with Nuke.
+
+USAGE
+
+  Shift+B         Arm the marquee tool (cursor becomes crosshair)
+  Click + drag    Draw the backdrop rectangle
+  Release         Backdrop is created; label dialog appears
+  Escape          Cancel at any point
+  Right-click     Cancel at any point
+  Toolbar button  Wrap backdrop around selected nodes
+
+CONFIGURATION
+
+  ASK_LABEL     = True   # toggle the label dialog
+  RANDOM_COLOUR = True   # toggle auto colour
+  DEBUG         = False  # print trace lines to the Script Editor
+
+
+────────────────────────────────────────────────────────────────
+TAGS (Nukepedia tag field)
+──────────────────────────
+backdrop, nodegraph, ui, workflow, python, pyside, marquee, selection, organisation, productivity
