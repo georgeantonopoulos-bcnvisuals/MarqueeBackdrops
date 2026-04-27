@@ -22,7 +22,7 @@ A Nuke tool that lets you draw a **backdrop by dragging a marquee** directly in 
 | Nuke | Qt binding |
 |------|-----------|
 | 11 – 14.x | PySide2 (bundled) |
-| 15+ | PySide6 (bundled) |
+| 15 – 16+ | PySide6 (bundled) |
 
 No third-party packages required.
 
@@ -34,10 +34,10 @@ No third-party packages required.
 2. Add the following to `~/.nuke/menu.py`:
 
 ```python
-# menu.py — add these lines to your existing ~/.nuke/menu.py
-# ─────────────────────────────────────────────────────────────
-# Compatible with Nuke 11–14.x (PySide2) and Nuke 15+ (PySide6)
+# menu.py - add these lines to your existing ~/.nuke/menu.py
+# Compatible with Nuke 11-14.x (PySide2) and Nuke 15-16+ (PySide6)
 
+import nuke
 import marquee_backdrop
 
 # Toolbar button to create a backdrop around selected nodes
@@ -45,7 +45,7 @@ toolbar = nuke.toolbar("Nodes")
 toolbar.addCommand(
     "Other/Backdrop (Marquee)",
     "marquee_backdrop.create_backdrop_around_selected()",
-    "shift+b",
+    "",
     icon="Backdrop.png",
 )
 ```

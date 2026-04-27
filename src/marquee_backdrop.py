@@ -1,7 +1,7 @@
 """
 marquee_backdrop.py
-───────────────────
-Nuke 14.1 — Shift+B in the Node Graph, drag a marquee, creates a BackdropNode.
+-------------------
+Nuke 11-16+ — Shift+B in the Node Graph, drag a marquee, creates a BackdropNode.
 
 Install:  drop into ~/.nuke/ and add to menu.py:
               import marquee_backdrop
@@ -27,10 +27,30 @@ def _global_pos(event):
         return event.globalPosition().toPoint()
     return event.globalPos()
 
-# ── Config ────────────────────────────────────────────────────
+# -- Qt compatibility --------------------------------------------------------
 
-SHORTCUT_KEY     = QtCore.Qt.Key_B
-REQUIRE_MODIFIER = QtCore.Qt.ShiftModifier
+if _PYSIDE_MAJOR >= 6:
+    _QT_KEY = QtCore.Qt.Key
+    _QT_MOD = QtCore.Qt.KeyboardModifier
+    _QT_MOUSE = QtCore.Qt.MouseButton
+    _QT_WINDOW = QtCore.Qt.WindowType
+    _QT_WIDGET = QtCore.Qt.WidgetAttribute
+    _QT_CURSOR = QtCore.Qt.CursorShape
+    _QT_EVENT = QtCore.QEvent.Type
+else:
+    _QT_KEY = QtCore.Qt
+    _QT_MOD = QtCore.Qt
+    _QT_MOUSE = QtCore.Qt
+    _QT_WINDOW = QtCore.Qt
+    _QT_WIDGET = QtCore.Qt
+    _QT_CURSOR = QtCore.Qt
+    _QT_EVENT = QtCore.QEvent
+
+
+# -- Config ------------------------------------------------------------------
+
+SHORTCUT_KEY     = _QT_KEY.Key_B
+REQUIRE_MODIFIER = _QT_MOD.ShiftModifier
 ASK_LABEL        = True
 RANDOM_COLOUR    = True
 DEFAULT_COLOR    = 0x6A6A6AFF
@@ -42,7 +62,7 @@ def _log(msg):
         print("[MB] {}".format(msg))
 
 
-# ── Helpers ───────────────────────────────────────────────────
+# -- Helpers -----------------------------------------------------------------
 
 def _random_pastel():
     h = random.random()
@@ -128,7 +148,7 @@ def _screen_to_dag(global_point):
     return dag_x, dag_y
 
 
-# ── Overlay widget ────────────────────────────────────────────
+# -- Overlay widget ----------------------------------------------------------
 
 class _MarqueeOverlay(QtWidgets.QWidget):
     """
@@ -139,12 +159,12 @@ class _MarqueeOverlay(QtWidgets.QWidget):
     def __init__(self, color_rgb):
         super(_MarqueeOverlay, self).__init__(None)
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint |
-            QtCore.Qt.Tool)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
-        self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
+            _QT_WINDOW.FramelessWindowHint |
+            _QT_WINDOW.WindowStaysOnTopHint |
+            _QT_WINDOW.Tool)
+        self.setAttribute(_QT_WIDGET.WA_TranslucentBackground, True)
+        self.setAttribute(_QT_WIDGET.WA_ShowWithoutActivating, True)
+        self.setAttribute(_QT_WIDGET.WA_TransparentForMouseEvents, True)
         self._r, self._g, self._b = color_rgb
 
     def paintEvent(self, event):
@@ -159,7 +179,7 @@ class _MarqueeOverlay(QtWidgets.QWidget):
         painter.end()
 
 
-# ── Event filter ──────────────────────────────────────────────
+# -- Event filter ------------------------------------------------------------
 
 class _Filter(QtCore.QObject):
 
@@ -172,16 +192,16 @@ class _Filter(QtCore.QObject):
         self._color         = None     # Pre-picked Nuke tile_color int
         self._cursor_timer  = None
 
-    # ── cursor ────────────────────────────────────────────────
+    # -- cursor --------------------------------------------------------------
 
     def _start_cursor(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
+        QtWidgets.QApplication.setOverrideCursor(_QT_CURSOR.CrossCursor)
         self._cursor_timer = QtCore.QTimer()
         self._cursor_timer.timeout.connect(self._enforce_cursor)
         self._cursor_timer.start(50)
 
     def _enforce_cursor(self):
-        QtWidgets.QApplication.changeOverrideCursor(QtCore.Qt.CrossCursor)
+        QtWidgets.QApplication.changeOverrideCursor(_QT_CURSOR.CrossCursor)
 
     def _stop_cursor(self):
         if self._cursor_timer:
@@ -191,7 +211,7 @@ class _Filter(QtCore.QObject):
         while QtWidgets.QApplication.overrideCursor() is not None:
             QtWidgets.QApplication.restoreOverrideCursor()
 
-    # ── state ─────────────────────────────────────────────────
+    # -- state ---------------------------------------------------------------
 
     def _arm(self):
         self._mode  = "armed"
@@ -210,7 +230,7 @@ class _Filter(QtCore.QObject):
             self._band = None
         _log("DISARMED")
 
-    # ── filter ────────────────────────────────────────────────
+    # -- filter --------------------------------------------------------------
 
     def eventFilter(self, obj, event):
         try:
@@ -223,9 +243,9 @@ class _Filter(QtCore.QObject):
     def _handle(self, obj, event):
         t = event.type()
 
-        # ── IDLE ──────────────────────────────────────────────
+        # -- IDLE ------------------------------------------------------------
         if self._mode == "idle":
-            if t == QtCore.QEvent.KeyPress:
+            if t == _QT_EVENT.KeyPress:
                 if event.key() == SHORTCUT_KEY and \
                    (event.modifiers() & REQUIRE_MODIFIER):
                     focus = QtWidgets.QApplication.focusWidget()
@@ -239,19 +259,19 @@ class _Filter(QtCore.QObject):
                                 cn = focus.metaObject().className()
                             except RuntimeError:
                                 cn = "(deleted)"
-                        _log("Shift+B ignored — focus: {}".format(cn))
+                        _log("Shift+B ignored - focus: {}".format(cn))
             return False
 
-        # ── ARMED ─────────────────────────────────────────────
+        # -- ARMED -----------------------------------------------------------
         if self._mode == "armed":
-            if t == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
+            if t == _QT_EVENT.KeyPress:
+                if event.key() == _QT_KEY.Key_Escape:
                     self._disarm()
                     return True
                 return True
 
-            if t == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.LeftButton:
+            if t == _QT_EVENT.MouseButtonPress:
+                if event.button() == _QT_MOUSE.LeftButton:
                     gp = _global_pos(event)
                     self._origin_global = gp
 
@@ -271,28 +291,28 @@ class _Filter(QtCore.QObject):
                         self._origin_dag[0], self._origin_dag[1]))
                     return True
 
-                if event.button() == QtCore.Qt.RightButton:
+                if event.button() == _QT_MOUSE.RightButton:
                     self._disarm()
                     return True
 
             return False
 
-        # ── DRAGGING ──────────────────────────────────────────
+        # -- DRAGGING --------------------------------------------------------
         if self._mode == "dragging":
-            if t == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
+            if t == _QT_EVENT.KeyPress:
+                if event.key() == _QT_KEY.Key_Escape:
                     self._disarm()
                     return True
                 return True
 
-            if t == QtCore.QEvent.MouseMove:
+            if t == _QT_EVENT.MouseMove:
                 cur = _global_pos(event)
                 self._band.setGeometry(
                     QtCore.QRect(self._origin_global, cur).normalized())
                 return True
 
-            if t == QtCore.QEvent.MouseButtonRelease:
-                if event.button() == QtCore.Qt.LeftButton:
+            if t == _QT_EVENT.MouseButtonRelease:
+                if event.button() == _QT_MOUSE.LeftButton:
                     end_global = _global_pos(event)
                     _log("MOUSE UP at screen ({},{})".format(
                         end_global.x(), end_global.y()))
@@ -320,7 +340,7 @@ class _Filter(QtCore.QObject):
                     _log("Size: {:.0f} x {:.0f}".format(dw, dh))
 
                     if dw < 10 or dh < 10:
-                        _log("Too small — no backdrop created")
+                        _log("Too small - no backdrop created")
                         return True
 
                     dl = min(x1, x2)
@@ -344,7 +364,7 @@ class _Filter(QtCore.QObject):
         return False
 
 
-# ── Backdrop creation ─────────────────────────────────────────
+# -- Backdrop creation -------------------------------------------------------
 
 def _ask_label():
     panel = nuke.Panel("Backdrop Label")
@@ -394,7 +414,7 @@ def create_backdrop_around_selected(label=""):
     return _create_backdrop(x0, y0, x1 - x0, y1 - y0, label)
 
 
-# ── Install ───────────────────────────────────────────────────
+# -- Install -----------------------------------------------------------------
 
 _filter = None
 
